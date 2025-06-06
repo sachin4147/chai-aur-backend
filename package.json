@@ -9,7 +9,7 @@
   },
   "author": "",
   "license": "ISC",
-  "devDependencies": {
+  "devDependencies": {   
     "cookies-parser": "^1.2.0",
     "nodemon": "^3.1.10",
     "prettier": "^3.5.3"

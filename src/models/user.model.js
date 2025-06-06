@@ -43,7 +43,7 @@ const UserSchema = new Schema(
       required: [true, "password is required"],
     },
     refreshToken: {
-      required: true,
+      required: false,
       type: String,
     },
   },
@@ -53,7 +53,7 @@ const UserSchema = new Schema(
 );
 
 UserSchema.pre("save", async function (next) {
-  if (!this.password.isModified("password")) return next();
+  if (!this.isModified("password")) return next();
   this.password = await bcrypt.hash(this.password, 10);
   next();
 });
@@ -69,7 +69,7 @@ UserSchema.methods.generateAccesstoken = async function () {
       fullName: this.fullName,
       username: this.username,
     },
-    process.env.SECRET_TOKEN_KEY,
+    process.env.SECRET_TOKEN_KEY||"qwertyuiop",
     { expiresIn: "1d" }
   );
 };
@@ -78,7 +78,7 @@ UserSchema.methods.generaterefreshtoken = async function () {
     {
       _id: this._id,
     },
-    process.env.REFRESH_TOKEN_KEY,
+    process.env.REFRESH_TOKEN_KEY||"poiuytrewq",
     { expiresIn: "10d" }
   );
 };
