@@ -8,7 +8,7 @@ export const verifyJWT = async (req, res, next) => {
     const authHeader = req.headers.authorization;
 
 
-    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    if (!(authHeader || authHeader.startsWith("Bearer "))) {
       throw new APIError(401, "Unauthorized: No token provided");
     }
 

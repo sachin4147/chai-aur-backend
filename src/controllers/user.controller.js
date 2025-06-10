@@ -1,8 +1,10 @@
+
 import { User } from "../models/user.model.js";
 import { APIError } from "../utils/APIError.js";
 import { ApiResponse } from "../utils/APIResponse.js";
 import { asyncHandeler } from "../utils/asyncHandlers.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
+import jwt from "jsonwebtoken"
 
 const generateAccessandrefreshToken = async (userid) => {
   try {
@@ -70,7 +72,7 @@ const registerHandler = asyncHandeler(async (req, res) => {
 const loginUser = asyncHandeler(async (req, res) => {
   const { email, password, username } = req.body;
 
-  if (!email || !username) {
+  if (!(email || username)) {
     throw new APIError(400, "Email and username are required");
   }
   const user = await User.findOne({
@@ -114,8 +116,50 @@ const logutUser = asyncHandeler(async (req, res) => {
     .json(new ApiResponse(200, {}, "logged out successfully"));
 });
 
+const getRefreshTokenaccess=asyncHandeler(async(req,res)=>{
+
+  try {
+    const refreshToken = req.cookies.generateRefreshToken|| req.body.refreshToken
+    if(!refreshToken) {
+      throw new APIError(400,"Refresh token is required")
+    }
+     const decodeToken= jwt.verify(refreshToken,"poiuytrewq")
+  
+     const user=await User.findById(decodeToken._id)
+  
+     if(!user){
+      throw new APIError(404,"invalid token")
+     }
+  
+     if(refreshToken!==user.refreshToken){
+      throw new APIError(401,"invalid Token or token has been used already")
+     }
+     const { generateAccessToken, generateRefreshToken }=await generateAccessandrefreshToken(user._id) 
+     const options={
+      httpOnly:true,
+      secure:true,
+     }
+  
+  return res
+          .status(200)
+          .cookie("accessToken", generateAccessToken, options)
+          .cookie("refreshToken", generateRefreshToken, options)
+          .json(
+              new ApiResponse(
+                  200, 
+                  {generateAccessToken,generateRefreshToken },
+                  "Access token refreshed"
+              )
+          )
+  
+  } catch (error) {
+    throw new APIError(400,"Invalid refresh token")
+  }
+
+})
 export { 
          registerHandler, 
          loginUser, 
-         logutUser 
+         logutUser,
+         getRefreshTokenaccess
         };
