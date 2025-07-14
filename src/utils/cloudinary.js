@@ -1,6 +1,7 @@
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
-console.log(process.env.CLOUDINARY_NAME)
+import { APIError } from "./APIError.js";
+//console.log(process.env.CLOUDINARY_NAME)
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_NAME ||"dyhet8o91",
   api_key: process.env.CLOUDINARY_API_KEY || "695376417368626",
@@ -25,5 +26,14 @@ cloudinary.config({
   }
 };
  
+const deleteOncloudinaryimage=async (cloudinarprevPath)=>{
+  try {
+    const response=await cloudinary.uploader.destroy(cloudinarprevPath)
+    console.log("response",response)
+    return response
+  } catch (error) {
+    throw new APIError(500,error?.message || "Internal server error while deleting previous Image")
+  }
+}
 
-export {uploadOnCloudinary}
+export {uploadOnCloudinary,deleteOncloudinaryimage}
